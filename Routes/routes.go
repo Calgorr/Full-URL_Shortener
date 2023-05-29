@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	authentication "github.com/Calgorr/Full-URL_Shortener/authentication"
 	"github.com/Calgorr/Full-URL_Shortener/database"
@@ -40,4 +41,21 @@ func Login(c echo.Context) error {
 	}
 	c.Response().Header().Set("Authorization", token)
 	return c.String(http.StatusOK, "Logged in")
+}
+func CreateURL(c echo.Context) error {
+	longURL := c.FormValue("long_url")
+	if longURL == "" {
+		return c.String(http.StatusBadRequest, "Long URL is required")
+	}
+
+	shortURL := model.GenerateShortURL()
+
+	url, err := database.CreateURL()
+
+	return c.JSON(http.StatusCreated, model.URL{
+		ID:        id,
+		LongURL:   longURL,
+		ShortURL:  shortURL,
+		CreatedAt: time.Now(),
+	})
 }

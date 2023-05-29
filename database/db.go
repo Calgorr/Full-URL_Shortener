@@ -58,7 +58,7 @@ func GetUserByUsername(username string) (*model.User, error) {
 	}
 	return user, nil
 }
-func CreateURL(userID int64, longURL string) (&model.URL, error) {
+func CreateURL(userID int64, longURL string) (*model.URL, error) {
 	connect()
 	defer db.Close()
 	shortURL := model.GenerateShortURL()
