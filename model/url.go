@@ -1,7 +1,9 @@
 package model
 
 import (
-	"math/rand"
+	"crypto/md5"
+	"encoding/base64"
+	"strings"
 	"time"
 )
 
@@ -13,12 +15,10 @@ type URL struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func GenerateShortURL() string {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	shortURL := make([]byte, 6)
-	rand.Seed(time.Now().UnixNano())
-	for i := range shortURL {
-		shortURL[i] = charset[rand.Intn(len(charset))]
-	}
-	return string(shortURL)
+func NewLink(url string) *URL {
+	link := new(URL)
+	link.LongURL = url
+	md5 := md5.Sum([]byte(url))
+	link.ShortURL = strings.ReplaceAll(strings.ReplaceAll(base64.StdEncoding.EncodeToString(md5[:])[:6], "/", "_"), "+", "-")
+	return link
 }

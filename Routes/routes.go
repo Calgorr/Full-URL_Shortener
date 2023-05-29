@@ -1,9 +1,9 @@
-package handler
+package routes
 
 import (
 	"fmt"
 	"net/http"
-	"time"
+	"strings"
 
 	authentication "github.com/Calgorr/Full-URL_Shortener/authentication"
 	"github.com/Calgorr/Full-URL_Shortener/database"
@@ -42,20 +42,37 @@ func Login(c echo.Context) error {
 	c.Response().Header().Set("Authorization", token)
 	return c.String(http.StatusOK, "Logged in")
 }
-func CreateURL(c echo.Context) error {
-	longURL := c.FormValue("long_url")
-	if longURL == "" {
-		return c.String(http.StatusBadRequest, "Long URL is required")
+
+func SaveUrl(c echo.Context) error {
+	url := c.FormValue("url")
+	if url == "" {
+		return c.String(http.StatusBadRequest, "url is required")
 	}
+	url = strings.Replace(url, "www.", "", -1)
+	if !strings.Contains(url, "http://") {
+		url = "http://" + url
+	}
+	link := model.NewLink(url)
+	err := db.AddLink(link)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+	return c.String(http.StatusOK, "Your Shortened link is "+c.Request().Host+"/"+link.Hash)
+}
 
-	shortURL := model.GenerateShortURL()
-
-	url, err := database.CreateURL()
-
-	return c.JSON(http.StatusCreated, model.URL{
-		ID:        id,
-		LongURL:   longURL,
-		ShortURL:  shortURL,
-		CreatedAt: time.Now(),
-	})
+func Redirect(c echo.Context) error {
+	var err error
+	var address string
+	if c.Param("hash") != "" {
+		hash := c.Param("hash")
+		address, err = db.GetLink(hash)
+		if address != "" {
+			db.IncrementUsage(hash)
+			err = c.Redirect(http.StatusTemporaryRedirect, address)
+		} else {
+			err = c.String(http.StatusBadRequest, "Invalid url")
+		}
+	}
+	return err
 }
