@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	authentication "github.com/Calgorr/IE_Backend_Fall/Authentication"
-	model "github.com/Calgorr/IE_Backend_Fall/Model"
-	"github.com/Calgorr/IE_Backend_Fall/database"
+	authentication "github.com/Calgorr/Full-URL_Shortener/authentication"
+	"github.com/Calgorr/Full-URL_Shortener/database"
+	model "github.com/Calgorr/Full-URL_Shortener/model"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,12 +29,12 @@ func Login(c echo.Context) error {
 	if err != nil || u.Password != user.Password {
 		return c.String(http.StatusUnauthorized, "Wrong username or password")
 	}
-	id, err := database.GetIDByUsername(user.Username)
+	_, err = database.GetUserByUsername(u.Username)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Something went wrong")
 	}
-	token, err := authentication.GenerateJWT(id)
+	token, err := authentication.GenerateJWT()
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Something went wrong")
 	}
