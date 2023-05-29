@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	model "github.com/Calgorr/Full-URL_Shortener/model"
@@ -56,4 +57,25 @@ func GetUserByUsername(username string) (*model.User, error) {
 		return nil, errors.New("User does not exists")
 	}
 	return user, nil
+}
+func CreateURL(userID int64, longURL string) (&model.URL, error) {
+	connect()
+	defer db.Close()
+	shortURL := model.GenerateShortURL()
+	sqlState := "INSERT INTO urls (user_id, long_url, short_url) VALUES ($1, $2, $3) RETURNING id"
+
+	var id int64
+	err = db.QueryRow(sqlState, userID, longURL, shortURL).Scan(&id)
+	if err != nil {
+		log.Println("Failed to execute query:", err)
+		return nil, err
+	}
+
+	return &model.URL{
+		ID:        id,
+		UserID:    userID,
+		LongURL:   longURL,
+		ShortURL:  shortURL,
+		CreatedAt: time.Now(),
+	}, nil
 }

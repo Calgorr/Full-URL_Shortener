@@ -7,6 +7,7 @@ import (
 
 type URL struct {
 	ID        int64     `json:"id"`
+	UserID    int64     `json:"userid"`
 	LongURL   string    `json:"long_url"`
 	ShortURL  string    `json:"short_url"`
 	CreatedAt time.Time `json:"created_at"`
