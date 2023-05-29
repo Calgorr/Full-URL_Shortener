@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	model "github.com/Calgorr/Full-URL_Shortener/model"
@@ -24,20 +23,18 @@ var (
 	err error
 )
 
-func connect() {
+func connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
-	db, err = sql.Open("postgres", psqlInfo)
+	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	err := db.Ping()
-	if err != nil {
-		panic(err)
-	}
-}
 
+	err = db.Ping()
+	return db, err
+}
 func AddUser(user *model.User) error {
 	fmt.Println(user, "moz")
 	connect()
@@ -58,24 +55,57 @@ func GetUserByUsername(username string) (*model.User, error) {
 	}
 	return user, nil
 }
-func CreateURL(userID int64, longURL string) (*model.URL, error) {
-	connect()
-	defer db.Close()
-	shortURL := model.GenerateShortURL()
-	sqlState := "INSERT INTO urls (user_id, long_url, short_url) VALUES ($1, $2, $3) RETURNING id"
 
-	var id int64
-	err = db.QueryRow(sqlState, userID, longURL, shortURL).Scan(&id)
+func AddLink(link *model.URL) error {
+	db, err := connect()
 	if err != nil {
-		log.Println("Failed to execute query:", err)
+		return err
+	}
+	defer db.Close()
+	sqlstt := `INSERT INTO link (longurl,shorturl,usedtimes,date) VALUES ($1,$2,$3,$4)`
+	_, err = db.Exec(sqlstt, link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetLink(hash string) (*model.URL, error) {
+	db, err := connect()
+	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
+	sqlstt := `SELECT * FROM link WHERE shorturl=$1`
+	var link model.URL
+	err = db.QueryRow(sqlstt, hash).Scan(&link.LongURL, &link.ShortURL, &link.UsedTimes)
+	if err != nil {
+		return nil, err
+	}
+	return &link, nil
+}
 
-	return &model.URL{
-		ID:        id,
-		UserID:    userID,
-		LongURL:   longURL,
-		ShortURL:  shortURL,
-		CreatedAt: time.Now(),
-	}, nil
+func DeleteLink(hash string) error {
+	db, err := connect()
+	if err != nil {
+		return errors.New("Internal Server Error")
+	}
+	defer db.Close()
+	sqlstt := `DELETE FROM link WHERE shorturl=$1`
+	_, err = db.Exec(sqlstt, hash)
+	if err != nil {
+		return errors.New("Internal Server Error")
+	}
+	return nil
+}
+
+func IncrementUsage(hash string) error {
+	db, err := connect()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	sqlstt := `UPDATE link SET usedtimes=usedtimes+1 WHERE shorturl=$1`
+	_, err = db.Exec(sqlstt, hash)
+	return err
 }

@@ -12,6 +12,7 @@ type URL struct {
 	UserID    int64     `json:"userid"`
 	LongURL   string    `json:"long_url"`
 	ShortURL  string    `json:"short_url"`
+	UsedTimes int       `json:"usedtimes"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
