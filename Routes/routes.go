@@ -13,7 +13,7 @@ import (
 )
 
 func SignUp(c echo.Context) error {
-	var user *model.User
+	user := new(model.User)
 	user, err := user.Bind(c)
 	err = database.AddUser(user)
 	if err != nil {
@@ -24,7 +24,7 @@ func SignUp(c echo.Context) error {
 }
 
 func Login(c echo.Context) error {
-	var user *model.User
+	user := new(model.User)
 	user, err := user.Bind(c)
 	id, ok := userValidation(user)
 	if !ok {

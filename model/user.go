@@ -2,12 +2,13 @@ package model
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/labstack/echo/v4"
 )
 
 type User struct {
-	UserID   int64  `json:"userid"`
+	UserID   int64  `form:"userid" json:"userid"`
 	Username string `form:"username" json:"username"`
 	Password string `form:"password" json:"password"`
 }
@@ -20,8 +21,7 @@ func NewUser(username, password string) (*User, error) {
 }
 
 func (u *User) Bind(c echo.Context) (*User, error) {
-	if err := c.Bind(u); err != nil {
-		return nil, err
-	}
+	fmt.Println(u)
+	c.Bind(u)
 	return u, nil
 }
