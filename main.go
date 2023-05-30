@@ -4,15 +4,15 @@ import (
 	routes "github.com/Calgorr/Full-URL_Shortener/Routes"
 	"github.com/Calgorr/Full-URL_Shortener/authentication"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-
 	// Echo setup
 	e := echo.New()
-
+	e.Use(middleware.Logger())
 	e.POST("/signup", routes.SignUp)
-	e.POST("login", routes.Login)
+	e.POST("/login", routes.Login)
 	// Routes
 	v := e.Group("")
 	v.Use(authentication.ValidateJWT)
