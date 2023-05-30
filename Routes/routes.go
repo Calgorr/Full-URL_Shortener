@@ -64,7 +64,7 @@ func SaveUrl(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "invalid token")
 	}
 	link := model.NewLink(url)
-	err = database.AddLink(link, claims["id"].(int))
+	err = database.AddLink(link, claims["id"].(float64))
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
