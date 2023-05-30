@@ -18,7 +18,7 @@ func main() {
 	v.Use(authentication.ValidateJWT)
 	e.POST("/urls", routes.SaveUrl)
 	e.GET("/:shortURL", routes.Redirect)
-	e.GET("/:shortURL/stats", GetURLStats)
+	//e.GET("/:shortURL/stats", GetURLStats)
 
 	// Start the server
 	e.Start(":8080")

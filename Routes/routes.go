@@ -26,10 +26,11 @@ func SignUp(c echo.Context) error {
 func Login(c echo.Context) error {
 	var user *model.User
 	user, err := user.Bind(c)
-	if userValidation(user) == false {
+	id, ok := userValidation(user)
+	if !ok {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
-	token, err := authentication.GenerateJWT()
+	token, err := authentication.GenerateJWT(id)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "internal server error")
@@ -40,12 +41,12 @@ func Login(c echo.Context) error {
 	return json.NewEncoder(c.Response()).Encode(user)
 }
 
-func userValidation(user *model.User) bool {
+func userValidation(user *model.User) (int, bool) {
 	user, err := database.GetUserByUsername(user.Username)
 	if err != nil {
-		return false
+		return -1, false
 	}
-	return true
+	return int(user.UserID), true
 }
 
 func SaveUrl(c echo.Context) error {
@@ -57,8 +58,13 @@ func SaveUrl(c echo.Context) error {
 	if !strings.Contains(url, "http://") {
 		url = "http://" + url
 	}
+	token := c.Request().Header.Get("Authorization")
+	claims, err := authentication.ExtractClaimsFromToken(token)
+	if err != nil {
+		return c.String(http.StatusUnauthorized, "invalid token")
+	}
 	link := model.NewLink(url)
-	err := database.AddLink(link)
+	err = database.AddLink(link, claims["id"].(int))
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Internal Server Error")

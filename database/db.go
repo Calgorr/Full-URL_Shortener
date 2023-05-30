@@ -46,31 +46,31 @@ func AddUser(user *model.User) error {
 func GetUserByUsername(username string) (*model.User, error) {
 	connect()
 	defer db.Close()
-	sqlStatement := "SELECT username, password FROM users WHERE username=$1 "
+	sqlStatement := "SELECT userid,username, password FROM users WHERE username=$1 "
 	row := db.QueryRow(sqlStatement, username)
 	user := new(model.User)
-	err := row.Scan(&user.Username, &user.Password)
+	err := row.Scan(&user.UserID, &user.Username, &user.Password)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("User does not exists")
 	}
 	return user, nil
 }
 
-func AddLink(link *model.URL) error {
+func AddLink(link *model.URL, id int) error {
 	db, err := connect()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
-	sqlstt := `INSERT INTO link (longurl,shorturl,usedtimes,date) VALUES ($1,$2,$3,$4)`
-	_, err = db.Exec(sqlstt, link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt)
+	sqlstt := `INSERT INTO link (userid,longurl,shorturl,usedtimes,date) VALUES ($1,$2,$3,$4,$5)`
+	_, err = db.Exec(sqlstt, id, link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetLink(hash string) (*model.URL, error) {
+func GetLink(shortURL string) (*model.URL, error) {
 	db, err := connect()
 	if err != nil {
 		return nil, err
@@ -78,34 +78,34 @@ func GetLink(hash string) (*model.URL, error) {
 	defer db.Close()
 	sqlstt := `SELECT * FROM link WHERE shorturl=$1`
 	var link model.URL
-	err = db.QueryRow(sqlstt, hash).Scan(&link.LongURL, &link.ShortURL, &link.UsedTimes)
+	err = db.QueryRow(sqlstt, shortURL).Scan(&link.LongURL, &link.ShortURL, &link.UsedTimes)
 	if err != nil {
 		return nil, err
 	}
 	return &link, nil
 }
 
-func DeleteLink(hash string) error {
+func DeleteLink(shortURL string) error {
 	db, err := connect()
 	if err != nil {
 		return errors.New("Internal Server Error")
 	}
 	defer db.Close()
 	sqlstt := `DELETE FROM link WHERE shorturl=$1`
-	_, err = db.Exec(sqlstt, hash)
+	_, err = db.Exec(sqlstt, shortURL)
 	if err != nil {
 		return errors.New("Internal Server Error")
 	}
 	return nil
 }
 
-func IncrementUsage(hash string) error {
+func IncrementUsage(shortURL string) error {
 	db, err := connect()
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	sqlstt := `UPDATE link SET usedtimes=usedtimes+1 WHERE shorturl=$1`
-	_, err = db.Exec(sqlstt, hash)
+	_, err = db.Exec(sqlstt, shortURL)
 	return err
 }

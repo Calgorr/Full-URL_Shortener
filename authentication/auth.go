@@ -11,10 +11,11 @@ import (
 
 const secret = "calgor"
 
-func GenerateJWT() (string, error) {
+func GenerateJWT(id int) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(24 * time.Hour).Unix()
+	claims["id"] = id
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err

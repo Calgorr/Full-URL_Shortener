@@ -7,10 +7,9 @@ import (
 )
 
 type User struct {
+	UserID   int64  `json:"userid"`
 	Username string `form:"username" json:"username"`
 	Password string `form:"password" json:"password"`
-	Token    string
-	URLs     []URL
 }
 
 func NewUser(username, password string) (*User, error) {
