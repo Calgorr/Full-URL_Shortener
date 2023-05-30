@@ -62,7 +62,7 @@ func AddLink(link *model.URL, id float64) error {
 		return err
 	}
 	defer db.Close()
-	sqlstt := `INSERT INTO urls (userid,longurl,shorturl,usedtimes,date) VALUES ($1,$2,$3,$4,$5)`
+	sqlstt := `INSERT INTO url (userid,longurl,shorturl,used_times,created_at) VALUES ($1,$2,$3,$4,$5)`
 	_, err = db.Exec(sqlstt, int(id), link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt)
 	if err != nil {
 		return err
@@ -76,13 +76,13 @@ func GetLink(shortURL string) (*model.URL, error) {
 		return nil, err
 	}
 	defer db.Close()
-	sqlstt := `SELECT * FROM urls WHERE shorturl=$1`
-	var link model.URL
-	err = db.QueryRow(sqlstt, shortURL).Scan(&link.LongURL, &link.ShortURL, &link.UsedTimes)
+	sqlstt := `SELECT * FROM url WHERE shorturl=$1`
+	url := new(model.URL)
+	err = db.QueryRow(sqlstt, shortURL).Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.UsedTimes, &url.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
-	return &link, nil
+	return url, nil
 }
 
 func DeleteLink(shortURL string) error {
@@ -91,7 +91,7 @@ func DeleteLink(shortURL string) error {
 		return errors.New("Internal Server Error")
 	}
 	defer db.Close()
-	sqlstt := `DELETE FROM urls WHERE shorturl=$1`
+	sqlstt := `DELETE FROM url WHERE shorturl=$1`
 	_, err = db.Exec(sqlstt, shortURL)
 	if err != nil {
 		return errors.New("Internal Server Error")
@@ -105,7 +105,7 @@ func IncrementUsage(shortURL string) error {
 		return err
 	}
 	defer db.Close()
-	sqlstt := `UPDATE urlls SET usedtimes=usedtimes+1 WHERE shorturl=$1`
+	sqlstt := `UPDATE url SET used_times=used_times+1 WHERE shorturl=$1`
 	_, err = db.Exec(sqlstt, shortURL)
 	return err
 }

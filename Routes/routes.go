@@ -73,17 +73,18 @@ func SaveUrl(c echo.Context) error {
 }
 
 func Redirect(c echo.Context) error {
-	var err error
-	var address *model.URL
-	if c.Param("hash") != "" {
-		hash := c.Param("hash")
-		address, err = database.GetLink(hash)
+	if c.Param("shortURL") != "" {
+		shortURL := c.Param("shortURL")
+		address, err := database.GetLink(shortURL)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Internal Server Error")
+		}
 		if address.ShortURL != "" {
 			database.IncrementUsage(address.ShortURL)
-			err = c.Redirect(http.StatusTemporaryRedirect, address.LongURL)
+			return c.Redirect(http.StatusTemporaryRedirect, address.LongURL)
 		} else {
-			err = c.String(http.StatusBadRequest, "Invalid url")
+			return c.String(http.StatusBadRequest, "Invalid url")
 		}
 	}
-	return err
+	return c.String(http.StatusInternalServerError, "Internal Server Error")
 }
