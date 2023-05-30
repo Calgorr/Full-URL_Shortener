@@ -15,7 +15,7 @@ const (
 	port     = 5432
 	user     = "calgor"
 	password = "ami1r3ali"
-	dbname   = "http_monitor"
+	dbname   = "url_shortener"
 )
 
 var (
