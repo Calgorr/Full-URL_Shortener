@@ -1,48 +1,6 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <title>Submit Form with Token</title>
-    <script>
-        function submitForm(event) {
-            event.preventDefault();
-
-            var token = document.cookie.split(":")[0].split("=")[1]
-
-            var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/urls", true);
-            xhr.setRequestHeader("Authorization", token);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        console.log(xhr.responseText);
-                    } else {
-                        console.log("Error:", xhr.status);
-                    }
-                }
-            };
-
-            var form = document.getElementById("myForm");
-            var urlInput = form.elements["url"];
-            var urlValue = urlInput.value;
-
-            var customPathInput = form.elements["customPath"];
-            var customPathValue = customPathInput.value.trim();
-
-            var requestBody;
-            if (customPathValue) {
-                requestBody = "url=" + encodeURIComponent(urlValue) + "&customPath=" + encodeURIComponent(customPathValue);
-            } else {
-                requestBody = "url=" + encodeURIComponent(urlValue);
-            }
-
-            xhr.send(requestBody);
-        }
-    </script>
-</head>
-
 <body>
     <h1>URL</h1>
     <form id="myForm">
@@ -52,6 +10,39 @@
         <input type="text" id="customPath" name="customPath"><br><br>
         <input type="submit" value="Submit" onclick="submitForm(event)">
     </form>
+
+    <div id="response"></div>
+
+    <script>
+        function submitForm(event) {
+            event.preventDefault(); // Prevent default form submission behavior
+
+            // Get form data
+            var url = document.getElementById('url').value;
+            var customPath = document.getElementById('customPath').value;
+
+            // Create an XMLHttpRequest object
+            var xhr = new XMLHttpRequest();
+
+            // Configure the request
+            xhr.open('POST', '/urls', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
+            // Handle the response
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Display the server response on the page
+                    document.getElementById('response').innerHTML = xhr.responseText;
+                } else {
+                    // Display an error message
+                    document.getElementById('response').innerHTML = 'Error: ' + xhr.responseText;
+                }
+            };
+
+            // Send the request
+            xhr.send('url=' + encodeURIComponent(url) + '&customPath=' + encodeURIComponent(customPath));
+        }
+    </script>
 </body>
 
 </html>
