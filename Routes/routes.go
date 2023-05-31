@@ -91,6 +91,7 @@ func Redirect(c echo.Context) error {
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Internal Server Error")
 		}
+		fmt.Println(err)
 		if address.ShortURL != "" {
 			database.IncrementUsage(address.ShortURL)
 			return c.Redirect(http.StatusTemporaryRedirect, address.LongURL)

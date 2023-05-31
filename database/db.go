@@ -62,8 +62,8 @@ func AddLink(link *model.URL, id float64) error {
 		return err
 	}
 	defer db.Close()
-	sqlstt := `INSERT INTO url (userid,longurl,shorturl,used_times,created_at) VALUES ($1,$2,$3,$4,$5)`
-	_, err = db.Exec(sqlstt, int(id), link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt)
+	sqlstt := `INSERT INTO url (userid,longurl,shorturl,used_times,created_at,last_used_at) VALUES ($1,$2,$3,$4,$5,$6)`
+	_, err = db.Exec(sqlstt, int(id), link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt, link.LastUsed)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func GetLink(shortURL string) (*model.URL, error) {
 	defer db.Close()
 	sqlstt := `SELECT * FROM url WHERE shorturl=$1`
 	url := new(model.URL)
-	err = db.QueryRow(sqlstt, shortURL).Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.UsedTimes, &url.CreatedAt)
+	err = db.QueryRow(sqlstt, shortURL).Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.UsedTimes, &url.CreatedAt, &url.LastUsed)
 	if err != nil {
 		return nil, err
 	}

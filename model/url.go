@@ -15,11 +15,13 @@ type URL struct {
 	ShortURL  string    `json:"short_url"`
 	UsedTimes int       `json:"usedtimes"`
 	CreatedAt time.Time `json:"created_at"`
+	LastUsed  time.Time `json:"last_used"`
 }
 
 func NewLink(url, customPath string) *URL {
 	link := new(URL)
 	link.LongURL = url
+	link.LastUsed = time.Now()
 	md5 := md5.Sum([]byte(url))
 	if customPath != "" {
 		link.ShortURL = customPath
