@@ -22,9 +22,12 @@ func main() {
 	// Routes
 	v := e.Group("")
 	v.Use(authentication.ValidateJWT)
-	e.POST("/urls", routes.SaveUrl)
-	e.GET("/:shortURL", routes.Redirect)
-	//e.GET("/:shortURL/stats", GetURLStats)
+	v.POST("/urls", routes.SaveUrl)
+	e.GET("/urls", func(c echo.Context) error {
+		return c.File("form/url.html")
+	})
+	v.GET("/:shortURL", routes.Redirect)
+	v.GET("/:shortURL/stats", routes.GetURLStats)
 
 	// Start the server
 	e.Start(":8080")

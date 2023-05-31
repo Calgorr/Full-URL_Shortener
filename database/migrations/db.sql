@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS url (
     ID SERIAL PRIMARY KEY,
     UserID INT,
     Longurl VARCHAR(255),
-    shorturl VARCHAR(255),
+    shorturl VARCHAR(255) UNIQUE,
     used_times INT,
     created_at DATE,
     FOREIGN KEY (UserID) REFERENCES users(userid)

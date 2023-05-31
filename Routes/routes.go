@@ -26,7 +26,9 @@ func SignUp(c echo.Context) error {
 func Login(c echo.Context) error {
 	user := new(model.User)
 	user, err := user.Bind(c)
+	fmt.Println(user)
 	id, ok := userValidation(user)
+	fmt.Println(id, ok)
 	if !ok {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
@@ -36,7 +38,12 @@ func Login(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "internal server error")
 	}
 	c.Response().Header().Set(echo.HeaderAuthorization, token)
-
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		HttpOnly: false,
+	}
+	c.SetCookie(cookie)
 	c.Response().WriteHeader(http.StatusOK)
 	return json.NewEncoder(c.Response()).Encode(user)
 }
@@ -67,7 +74,7 @@ func SaveUrl(c echo.Context) error {
 	err = database.AddLink(link, claims["id"].(float64))
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusInternalServerError, "Internal Server Error")
+		return c.String(http.StatusInternalServerError, "URL already exists")
 	}
 	return c.String(http.StatusOK, "Your Shortened link is "+c.Request().Host+"/"+link.ShortURL)
 }
@@ -87,4 +94,20 @@ func Redirect(c echo.Context) error {
 		}
 	}
 	return c.String(http.StatusInternalServerError, "Internal Server Error")
+}
+
+func GetURLStats(c echo.Context) error {
+	shortURL := c.Param("shortURL")
+	if shortURL == "" {
+		return c.String(http.StatusBadRequest, "short url is required")
+	}
+	address, err := database.GetLink(shortURL)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Internal Server Error")
+	}
+	if address.ShortURL != "" {
+		return c.JSON(http.StatusOK, "{\"shortURL\":\""+address.ShortURL+"\",\"longURL\":\""+address.LongURL+"\",\"usageCount\":"+fmt.Sprintf("%d", address.UsedTimes)+"}")
+	} else {
+		return c.String(http.StatusBadRequest, "Invalid url")
+	}
 }
