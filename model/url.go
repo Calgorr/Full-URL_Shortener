@@ -16,10 +16,14 @@ type URL struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewLink(url string) *URL {
+func NewLink(url, customPath string) *URL {
 	link := new(URL)
 	link.LongURL = url
 	md5 := md5.Sum([]byte(url))
-	link.ShortURL = strings.ReplaceAll(strings.ReplaceAll(base64.StdEncoding.EncodeToString(md5[:])[:6], "/", "_"), "+", "-")
+	if customPath != "" {
+		link.ShortURL = customPath
+	} else {
+		link.ShortURL = strings.ReplaceAll(strings.ReplaceAll(base64.StdEncoding.EncodeToString(md5[:])[:6], "/", "_"), "+", "-")
+	}
 	return link
 }

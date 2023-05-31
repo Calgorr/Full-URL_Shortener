@@ -4,7 +4,6 @@
 <head>
     <title>Submit Form with Token</title>
     <script>
-
         function submitForm(event) {
             event.preventDefault();
 
@@ -29,7 +28,15 @@
             var urlInput = form.elements["url"];
             var urlValue = urlInput.value;
 
-            var requestBody = "url=" + encodeURIComponent(urlValue);
+            var customPathInput = form.elements["customPath"];
+            var customPathValue = customPathInput.value.trim();
+
+            var requestBody;
+            if (customPathValue) {
+                requestBody = "url=" + encodeURIComponent(urlValue) + "&customPath=" + encodeURIComponent(customPathValue);
+            } else {
+                requestBody = "url=" + encodeURIComponent(urlValue);
+            }
 
             xhr.send(requestBody);
         }
@@ -41,6 +48,8 @@
     <form id="myForm">
         <label for="url">URL:</label>
         <input type="text" id="url" name="url"><br><br>
+        <label for="customPath">Custom Path:</label>
+        <input type="text" id="customPath" name="customPath"><br><br>
         <input type="submit" value="Submit" onclick="submitForm(event)">
     </form>
 </body>

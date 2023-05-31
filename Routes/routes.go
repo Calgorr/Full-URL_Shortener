@@ -58,6 +58,7 @@ func userValidation(user *model.User) (int, bool) {
 
 func SaveUrl(c echo.Context) error {
 	url := c.FormValue("url")
+	customPath := c.FormValue("customPath")
 	if url == "" {
 		return c.String(http.StatusBadRequest, "url is required")
 	}
@@ -70,7 +71,7 @@ func SaveUrl(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusUnauthorized, "invalid token")
 	}
-	link := model.NewLink(url)
+	link := model.NewLink(url, customPath)
 	err = database.AddLink(link, claims["id"].(float64))
 	if err != nil {
 		fmt.Println(err)
