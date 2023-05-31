@@ -23,6 +23,7 @@ var (
 	err error
 )
 
+// connect establishes a connection to the database
 func connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -35,6 +36,8 @@ func connect() (*sql.DB, error) {
 	err = db.Ping()
 	return db, err
 }
+
+// AddUser inserts a new user into the database
 func AddUser(user *model.User) error {
 	connect()
 	defer db.Close()
@@ -43,6 +46,8 @@ func AddUser(user *model.User) error {
 	fmt.Println(err)
 	return err
 }
+
+// GetUserByUsername retrieves a user from the database based on their username and password
 func GetUserByUsername(user *model.User) (*model.User, error) {
 	connect()
 	defer db.Close()
@@ -51,11 +56,12 @@ func GetUserByUsername(user *model.User) (*model.User, error) {
 	u := new(model.User)
 	err := row.Scan(&u.UserID, &u.Username, &u.Password)
 	if err == sql.ErrNoRows {
-		return nil, errors.New("User does not exists")
+		return nil, errors.New("User does not exist")
 	}
 	return u, nil
 }
 
+// AddLink inserts a new URL into the database
 func AddLink(link *model.URL, id float64) error {
 	db, err := connect()
 	if err != nil {
@@ -70,6 +76,7 @@ func AddLink(link *model.URL, id float64) error {
 	return nil
 }
 
+// GetLink retrieves a URL from the database based on its short URL
 func GetLink(shortURL string) (*model.URL, error) {
 	db, err := connect()
 	if err != nil {
@@ -85,6 +92,7 @@ func GetLink(shortURL string) (*model.URL, error) {
 	return url, nil
 }
 
+// DeleteLink deletes a URL from the database based on its short URL
 func DeleteLink(shortURL string) error {
 	db, err := connect()
 	if err != nil {
@@ -99,6 +107,7 @@ func DeleteLink(shortURL string) error {
 	return nil
 }
 
+// IncrementUsage increments the usage count for a URL in the database
 func IncrementUsage(shortURL string) error {
 	db, err := connect()
 	if err != nil {
