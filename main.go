@@ -12,6 +12,9 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.POST("/signup", routes.SignUp)
+	e.GET("/signup", func(c echo.Context) error {
+		return c.File("form/signup.html")
+	})
 	e.POST("/login", routes.Login)
 	// Routes
 	v := e.Group("")

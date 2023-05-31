@@ -15,6 +15,7 @@ import (
 func SignUp(c echo.Context) error {
 	user := new(model.User)
 	user, err := user.Bind(c)
+	fmt.Println(user.Username, "moz", user.Password)
 	err = database.AddUser(user)
 	if err != nil {
 		return c.String(http.StatusConflict, "user already exists")
