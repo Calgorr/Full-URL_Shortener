@@ -66,12 +66,16 @@ func SaveUrl(c echo.Context) error {
 	if !strings.Contains(url, "http://") {
 		url = "http://" + url
 	}
+
 	token := c.Request().Header.Get("Authorization")
 	claims, err := authentication.ExtractClaimsFromToken(token)
 	if err != nil {
 		return c.String(http.StatusUnauthorized, "invalid token")
 	}
 	link := model.NewLink(url, customPath)
+	if !link.IsValidURL(url) {
+		return c.String(http.StatusBadRequest, "invalid url")
+	}
 	err = database.AddLink(link, claims["id"].(float64))
 	if err != nil {
 		fmt.Println(err)
