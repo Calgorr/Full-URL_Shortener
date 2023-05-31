@@ -15,7 +15,6 @@ import (
 func SignUp(c echo.Context) error {
 	user := new(model.User)
 	user, err := user.Bind(c)
-	fmt.Println(user.Username, "moz", user.Password)
 	err = database.AddUser(user)
 	if err != nil {
 		return c.String(http.StatusConflict, "user already exists")
@@ -43,7 +42,7 @@ func Login(c echo.Context) error {
 }
 
 func userValidation(user *model.User) (int, bool) {
-	user, err := database.GetUserByUsername(user.Username)
+	user, err := database.GetUserByUsername(user)
 	if err != nil {
 		return -1, false
 	}

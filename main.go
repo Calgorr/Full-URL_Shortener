@@ -16,6 +16,9 @@ func main() {
 		return c.File("form/signup.html")
 	})
 	e.POST("/login", routes.Login)
+	e.GET("/login", func(c echo.Context) error {
+		return c.File("form/login.html")
+	})
 	// Routes
 	v := e.Group("")
 	v.Use(authentication.ValidateJWT)

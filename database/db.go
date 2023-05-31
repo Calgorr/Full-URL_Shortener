@@ -43,17 +43,17 @@ func AddUser(user *model.User) error {
 	fmt.Println(err)
 	return err
 }
-func GetUserByUsername(username string) (*model.User, error) {
+func GetUserByUsername(user *model.User) (*model.User, error) {
 	connect()
 	defer db.Close()
-	sqlStatement := "SELECT userid,username, password FROM users WHERE username=$1 "
-	row := db.QueryRow(sqlStatement, username)
-	user := new(model.User)
-	err := row.Scan(&user.UserID, &user.Username, &user.Password)
+	sqlStatement := "SELECT userid,username, password FROM users WHERE username=$1 AND password=$2"
+	row := db.QueryRow(sqlStatement, user.Username, user.Password)
+	u := new(model.User)
+	err := row.Scan(&u.UserID, &u.Username, &u.Password)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("User does not exists")
 	}
-	return user, nil
+	return u, nil
 }
 
 func AddLink(link *model.URL, id float64) error {
