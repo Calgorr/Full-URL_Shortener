@@ -62,3 +62,21 @@ func TestGetLink(t *testing.T) {
 		t.Errorf("GetLink returned incorrect URL")
 	}
 }
+
+// TestDeleteLink tests the DeleteLink function
+func TestDeleteLink(t *testing.T) {
+	shortURL := "abc123"
+	err := DeleteLink(shortURL)
+	if err != nil {
+		t.Errorf("DeleteLink failed: %v", err)
+	}
+}
+
+// TestIncrementUsage tests the IncrementUsage function
+func TestIncrementUsage(t *testing.T) {
+	shortURL := "abc123"
+	err := IncrementUsage(shortURL)
+	if err != nil {
+		t.Errorf("IncrementUsage failed: %v", err)
+	}
+}
