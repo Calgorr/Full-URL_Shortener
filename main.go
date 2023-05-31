@@ -3,6 +3,7 @@ package main
 import (
 	routes "github.com/Calgorr/Full-URL_Shortener/Routes"
 	"github.com/Calgorr/Full-URL_Shortener/authentication"
+	md "github.com/Calgorr/Full-URL_Shortener/middleware"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -21,6 +22,7 @@ func main() {
 	})
 	// Routes
 	v := e.Group("")
+	v.Use(md.TokenMiddleware)
 	v.Use(authentication.ValidateJWT)
 	v.POST("/urls", routes.SaveUrl)
 	e.GET("/urls", func(c echo.Context) error {

@@ -28,7 +28,6 @@ func Login(c echo.Context) error {
 	user, err := user.Bind(c)
 	fmt.Println(user)
 	id, ok := userValidation(user)
-	fmt.Println(id, ok)
 	if !ok {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
@@ -91,7 +90,6 @@ func Redirect(c echo.Context) error {
 		if err != nil {
 			c.String(http.StatusInternalServerError, "Internal Server Error")
 		}
-		fmt.Println(err)
 		if address.ShortURL != "" {
 			database.IncrementUsage(address.ShortURL)
 			return c.Redirect(http.StatusTemporaryRedirect, address.LongURL)
