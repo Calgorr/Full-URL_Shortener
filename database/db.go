@@ -114,7 +114,7 @@ func IncrementUsage(shortURL string) error {
 		return err
 	}
 	defer db.Close()
-	sqlstt := `UPDATE url SET used_times=used_times+1 last_used_at=$1 WHERE shorturl=$2`
-	_, err = db.Exec(sqlstt, shortURL, time.Now())
+	sqlstt := `UPDATE url SET used_times=used_times+1, last_used_at=$1 WHERE shorturl=$2`
+	_, err = db.Exec(sqlstt, time.Now(), shortURL)
 	return err
 }
