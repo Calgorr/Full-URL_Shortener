@@ -43,7 +43,6 @@ func AddUser(user *model.User) error {
 	defer db.Close()
 	sqlStatement := "INSERT INTO users (created_at,username,password) VALUES ($1,$2,$3)"
 	_, err := db.Exec(sqlStatement, time.Now(), user.Username, user.Password)
-	fmt.Println(err)
 	return err
 }
 
@@ -68,6 +67,9 @@ func AddLink(link *model.URL, id float64) error {
 		return err
 	}
 	defer db.Close()
+	if exists, _ := checkUserIDLongURL(int(id), link.LongURL); exists {
+		return errors.New("URL already exists")
+	}
 	sqlstt := `INSERT INTO url (userid,longurl,shorturl,used_times,created_at,last_used_at) VALUES ($1,$2,$3,$4,$5,$6)`
 	_, err = db.Exec(sqlstt, int(id), link.LongURL, link.ShortURL, link.UsedTimes, link.CreatedAt, link.LastUsed)
 	if err != nil {
@@ -76,8 +78,39 @@ func AddLink(link *model.URL, id float64) error {
 	return nil
 }
 
-// GetLink retrieves a URL from the database based on its short URL
-func GetLink(shortURL string) (*model.URL, error) {
+func checkUserIDLongURL(userID int, longURL string) (bool, error) {
+	db, err := connect()
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+	sqlstt := `SELECT * FROM url WHERE userid=$1 AND longurl=$2`
+	url := new(model.URL)
+	err = db.QueryRow(sqlstt, userID, longURL).Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.UsedTimes, &url.CreatedAt, &url.LastUsed)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// GetLink retrieves a URL from the database based on its long URL
+func GetLinkByLongURL(LongURL string, id float64) (*model.URL, error) {
+	db, err := connect()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	sqlstt := `SELECT * FROM url WHERE longurl=$1 AND userid=$2`
+	url := new(model.URL)
+	err = db.QueryRow(sqlstt, LongURL, id).Scan(&url.ID, &url.UserID, &url.LongURL, &url.ShortURL, &url.UsedTimes, &url.CreatedAt, &url.LastUsed)
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
+}
+
+// GetLinkByShortURL retrieves a URL from the database based on its short URL
+func GetLinkByShortURL(shortURL string) (*model.URL, error) {
 	db, err := connect()
 	if err != nil {
 		return nil, err
