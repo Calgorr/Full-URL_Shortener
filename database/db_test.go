@@ -53,7 +53,7 @@ func TestAddLink(t *testing.T) {
 // TestGetLink tests the GetLink function
 func TestGetLink(t *testing.T) {
 	shortURL := "abc123"
-	url, err := GetLink(shortURL)
+	url, err := GetLinkByShortURL(shortURL)
 	if err != nil {
 		t.Errorf("GetLink failed: %v", err)
 	}
