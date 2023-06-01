@@ -79,7 +79,10 @@ func SaveUrl(c echo.Context) error {
 	}
 	err = database.AddLink(link, claims["id"].(float64)) // Adding the link to the database
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "URL already exists")
+		if err.Error() == "URL already exists" {
+			link, _ = database.GetLinkByLongURL(link.LongURL, claims["id"].(float64))
+			return c.String(http.StatusOK, "You already have a short URL for this link: "+c.Request().Host+"/"+link.ShortURL)
+		}
 	}
 	return c.String(http.StatusOK, "Your Shortened link is "+c.Request().Host+"/"+link.ShortURL)
 }
@@ -88,13 +91,21 @@ func SaveUrl(c echo.Context) error {
 func Redirect(c echo.Context) error {
 	if c.Param("shortURL") != "" {
 		shortURL := c.Param("shortURL")
-		address, err := database.GetLink(shortURL) // Retrieving the original long URL from the short URL
+		address, err := database.GetLinkByShortURL(shortURL) // Retrieving the original long URL from the short URL
 		if err != nil {
-			c.String(http.StatusInternalServerError, "Internal Server Error")
+			return c.String(http.StatusInternalServerError, "Internal Server Error")
 		}
 		if address.ShortURL != "" {
-			database.IncrementUsage(address.ShortURL)                        // Incrementing the usage count for the short URL
-			return c.Redirect(http.StatusTemporaryRedirect, address.LongURL) // Redirecting to the original long URL
+			database.IncrementUsage(address.ShortURL) // Incrementing the usage count for the short URL
+
+			// Construct the HTML response with the Google Analytics tracking code and redirection meta tag
+			htmlResponse := fmt.Sprintf("<html><head><script async src='https://www.googletagmanager.com/gtag/js?id=379471915'></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '379471915');</script><meta http-equiv='refresh' content='0;url=%s'></head><body>Redirecting...</body></html>", address.LongURL)
+
+			// Set the Content-Type header to "text/html"
+			c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+
+			// Send the HTML response with the Google Analytics tracking code and redirection meta tag to the user
+			return c.HTML(http.StatusOK, htmlResponse)
 		} else {
 			return c.String(http.StatusBadRequest, "Invalid url")
 		}
@@ -102,13 +113,15 @@ func Redirect(c echo.Context) error {
 	return c.String(http.StatusInternalServerError, "Internal Server Error")
 }
 
+// Incrementing the usage count for the short URL
+
 // GetURLStats retrieves the statistics of a short URL
 func GetURLStats(c echo.Context) error {
 	shortURL := c.Param("shortURL")
 	if shortURL == "" {
 		return c.String(http.StatusBadRequest, "short url is required")
 	}
-	address, err := database.GetLink(shortURL) // Retrieving the link data from the short URL
+	address, err := database.GetLinkByShortURL(shortURL) // Retrieving the link data from the short URL
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Internal Server Error")
 	}
