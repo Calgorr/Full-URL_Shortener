@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/golang-migrate/migrate/v4 v4.16.0
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lib/pq v1.10.9
 )

@@ -1,10 +1,7 @@
--- Create the database if it doesn't exist
 CREATE DATABASE url_shortener;
 
--- Switch to the newly created database
-\ c url_shortener;
+\c url_shortener;
 
--- Create the users table
 CREATE TABLE IF NOT EXISTS users (
     userid SERIAL PRIMARY KEY,
     created_at DATE,
@@ -12,7 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255)
 );
 
--- Create the url table
 CREATE TABLE IF NOT EXISTS url (
     ID SERIAL PRIMARY KEY,
     UserID INT,
@@ -24,24 +20,15 @@ CREATE TABLE IF NOT EXISTS url (
     FOREIGN KEY (UserID) REFERENCES users(userid)
 );
 
--- Create the trigger function
-CREATE
-OR REPLACE FUNCTION delete_expired_url() RETURNS TRIGGER AS $ $ BEGIN
-DELETE FROM
-    url
-WHERE
-    last_used_at <= NOW() - INTERVAL '1 day';
+CREATE OR REPLACE FUNCTION delete_expired_url() RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM url
+    WHERE last_used_at <= NOW() - INTERVAL '1 day';
 
-RETURN NULL;
-
+    RETURN NULL;
 END;
+$$ LANGUAGE plpgsql;
 
-$ $ LANGUAGE plpgsql;
-
--- Create the trigger
 CREATE TRIGGER trg_delete_expired_url
-AFTER
-INSERT
-    OR
-UPDATE
-    OR DELETE ON url FOR EACH ROW EXECUTE FUNCTION delete_expired_url();
+AFTER INSERT OR UPDATE OR DELETE ON url
+FOR EACH ROW EXECUTE FUNCTION delete_expired_url();

@@ -4,17 +4,20 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"time"
 
 	model "github.com/Calgorr/Full-URL_Shortener/model"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
 
 const (
-	host     = "localhost"
+	host     = "db"
 	port     = 5432
-	user     = "calgor"
-	password = "ami1r3ali"
+	user     = "postgres"
+	password = "postgres"
 	dbname   = "url_shortener"
 )
 
@@ -23,8 +26,59 @@ var (
 	err error
 )
 
-// connect establishes a connection to the database
-func connect() (*sql.DB, error) {
+func RunMigrations() error {
+	db, err := sql.Open("postgres", "postgres://"+user+":"+password+"@"+host+":"+strconv.Itoa(port)+"/"+"postgres"+"?sslmode=disable")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	query := `
+	CREATE DATABASE url_shortener;
+
+	\\c url_shortener;
+
+	CREATE TABLE IF NOT EXISTS users (
+		userid SERIAL PRIMARY KEY,
+		created_at DATE,
+		username VARCHAR(255) UNIQUE,
+		password VARCHAR(255)
+	);
+
+	CREATE TABLE IF NOT EXISTS url (
+		ID SERIAL PRIMARY KEY,
+		UserID INT,
+		Longurl VARCHAR(255),
+		shorturl VARCHAR(255) UNIQUE,
+		used_times INT,
+		created_at TIMESTAMP,
+		last_used_at TIMESTAMP,
+		FOREIGN KEY (UserID) REFERENCES users(userid)
+	);
+
+	CREATE OR REPLACE FUNCTION delete_expired_url() RETURNS TRIGGER AS $$
+	BEGIN
+		DELETE FROM url
+		WHERE last_used_at <= NOW() - INTERVAL '1 day';
+
+		RETURN NULL;
+	END;
+	$$ LANGUAGE plpgsql;
+
+	CREATE TRIGGER trg_delete_expired_url
+	AFTER INSERT OR UPDATE OR DELETE ON url
+	FOR EACH ROW EXECUTE FUNCTION delete_expired_url();
+	`
+	_, err = db.Exec(query)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	return nil
+}
+
+// Connect establishes a Connection to the database
+func Connect() (*sql.DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -39,7 +93,7 @@ func connect() (*sql.DB, error) {
 
 // AddUser inserts a new user into the database
 func AddUser(user *model.User) error {
-	connect()
+	Connect()
 	defer db.Close()
 	sqlStatement := "INSERT INTO users (created_at,username,password) VALUES ($1,$2,$3)"
 	_, err := db.Exec(sqlStatement, time.Now(), user.Username, user.Password)
@@ -48,7 +102,7 @@ func AddUser(user *model.User) error {
 
 // GetUserByUsername retrieves a user from the database based on their username and password
 func GetUserByUsername(user *model.User) (*model.User, error) {
-	connect()
+	Connect()
 	defer db.Close()
 	sqlStatement := "SELECT userid,username, password FROM users WHERE username=$1 AND password=$2"
 	row := db.QueryRow(sqlStatement, user.Username, user.Password)
@@ -62,7 +116,7 @@ func GetUserByUsername(user *model.User) (*model.User, error) {
 
 // AddLink inserts a new URL into the database
 func AddLink(link *model.URL, id float64) error {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return err
 	}
@@ -79,7 +133,7 @@ func AddLink(link *model.URL, id float64) error {
 }
 
 func checkUserIDLongURL(userID int, longURL string) (bool, error) {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return false, err
 	}
@@ -95,7 +149,7 @@ func checkUserIDLongURL(userID int, longURL string) (bool, error) {
 
 // GetLink retrieves a URL from the database based on its long URL
 func GetLinkByLongURL(LongURL string, id float64) (*model.URL, error) {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +165,7 @@ func GetLinkByLongURL(LongURL string, id float64) (*model.URL, error) {
 
 // GetLinkByShortURL retrieves a URL from the database based on its short URL
 func GetLinkByShortURL(shortURL string) (*model.URL, error) {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +181,7 @@ func GetLinkByShortURL(shortURL string) (*model.URL, error) {
 
 // DeleteLink deletes a URL from the database based on its short URL
 func DeleteLink(shortURL string) error {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return errors.New("Internal Server Error")
 	}
@@ -142,7 +196,7 @@ func DeleteLink(shortURL string) error {
 
 // IncrementUsage increments the usage count for a URL in the database
 func IncrementUsage(shortURL string) error {
-	db, err := connect()
+	db, err := Connect()
 	if err != nil {
 		return err
 	}

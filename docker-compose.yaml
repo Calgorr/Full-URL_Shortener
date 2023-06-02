@@ -1,0 +1,32 @@
+version: '3'
+services:
+  db:
+    image: postgres:latest
+    ports:
+      - "8081:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U postgres -d postgres -f /docker-entrypoint-initdb.d/db.sql"]
+    volumes:
+      - ./database/migrations/db.sql:/docker-entrypoint-initdb.d/db.sql
+    restart: on-failure
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure

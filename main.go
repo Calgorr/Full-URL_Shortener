@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+	// fmt.Println(database.RunMigrations())
+	// res, err := database.Connect()
+	// fmt.Println(res, err)
 	// Echo setup
 	e := echo.New()
 	e.Use(middleware.Logger())
