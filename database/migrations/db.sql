@@ -13,11 +13,24 @@ CREATE TABLE IF NOT EXISTS url (
     ID SERIAL PRIMARY KEY,
     UserID INT,
     Longurl VARCHAR(255),
-    shorturl VARCHAR(255) UNIQUE,
+    shorturl VARCHAR(255),
     used_times INT,
     created_at TIMESTAMP,
     last_used_at TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES users(userid)
+    i want a constraint for this table in my postgres
+CREATE TABLE IF NOT EXISTS url (
+    ID SERIAL PRIMARY KEY,
+    UserID INT,
+    Longurl VARCHAR(255),
+    shorturl VARCHAR(255),
+    used_times INT,
+    created_at TIMESTAMP,
+    last_used_at TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES users(userid)
+);
+
+if i want to insert record into this table if the recorrd's userid and shorturl existin the table in a single record it cannot be added to the table
 );
 
 CREATE OR REPLACE FUNCTION delete_expired_url() RETURNS TRIGGER AS $$
