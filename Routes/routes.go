@@ -80,7 +80,7 @@ func SaveUrl(c echo.Context) error {
 	err = database.AddLink(link, claims["id"].(float64)) // Adding the link to the database
 	if err != nil {
 		if strings.Contains(err.Error(), "unique_shorturl") {
-			return c.String(http.StatusBadRequest, "custom path already exists, Try another one")
+			return c.String(http.StatusBadRequest, "custom path already exists, Try another one") // If the custom path already exists, return an error
 		}
 		link, err = database.GetLinkByLongURL(link.LongURL, claims["id"].(float64))
 		return c.String(http.StatusOK, "You already have a short URL for this link: "+c.Request().Host+"/"+link.ShortURL)
