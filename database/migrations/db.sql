@@ -13,12 +13,13 @@ CREATE TABLE IF NOT EXISTS url (
     ID SERIAL PRIMARY KEY,
     UserID INT,
     Longurl VARCHAR(255),
-    shorturl VARCHAR(255),
+    shorturl VARCHAR(255) UNIQUE,
     used_times INT,
     created_at TIMESTAMP,
     last_used_at TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES users(userid)
     CONSTRAINT unique_user_Longurl UNIQUE (UserID, Longurl)
+    CONSTRAINT unique_shorturl UNIQUE (shorturl)
 );
 
 CREATE OR REPLACE FUNCTION delete_expired_url() RETURNS TRIGGER AS $$

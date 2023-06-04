@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	host     = "db"
+	host     = "localhost"
 	port     = 5432
 	user     = "postgres"
-	password = "postgres"
+	password = "ami1r3ali"
 	dbname   = "url_shortener"
 )
 
