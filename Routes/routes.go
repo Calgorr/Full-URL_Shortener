@@ -79,10 +79,8 @@ func SaveUrl(c echo.Context) error {
 	}
 	err = database.AddLink(link, claims["id"].(float64)) // Adding the link to the database
 	if err != nil {
-		if err.Error() == "URL already exists" {
-			link, _ = database.GetLinkByLongURL(link.LongURL, claims["id"].(float64))
-			return c.String(http.StatusOK, "You already have a short URL for this link: "+c.Request().Host+"/"+link.ShortURL)
-		}
+		link, _ = database.GetLinkByLongURL(link.LongURL, claims["id"].(float64))
+		return c.String(http.StatusOK, "You already have a short URL for this link: "+c.Request().Host+"/"+link.ShortURL)
 	}
 	return c.String(http.StatusOK, "Your Shortened link is "+c.Request().Host+"/"+link.ShortURL)
 }
